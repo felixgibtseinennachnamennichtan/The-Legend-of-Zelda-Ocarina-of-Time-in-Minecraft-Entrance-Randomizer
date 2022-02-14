@@ -16,9 +16,10 @@ namespace TLoZOoTiM_Rando
     {
         public string[] KokiriInside;
         public string[] KokiriOutside;
-        public string[] KokiriInsideRando = new string[17];
-        public string[] KokiriOutsideRando = new string[17];
-        public int[] Other= new int[17];
+        public string[] KokiriInsideRando;
+        public string[] KokiriOutsideRando;
+        public int[] Other;
+        public string ogPath;
         public Form1()
         {
             InitializeComponent();
@@ -32,12 +33,12 @@ namespace TLoZOoTiM_Rando
 
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
-                    string ogPath = fbd.SelectedPath;
+                     ogPath = fbd.SelectedPath;
                     string[] files = Directory.GetFiles(fbd.SelectedPath, "*.*", SearchOption.AllDirectories);
                     List<string> Kokiri = new List<string>();
                     
                     foreach (string s in files) {
-                        if (s.Substring(ogPath.Length + 1, 13).Equals("kokiri_forest")&s.Substring(s.Length- "inside.mcfunction".Length,"inside.mcfunction".Length).Equals("inside.mcfunction")) {
+                        if (s.Substring(s.Length- "inside.mcfunction".Length,"inside.mcfunction".Length).Equals("inside.mcfunction")) {
                             Kokiri.Add(s);
                         }
                     }
@@ -45,7 +46,7 @@ namespace TLoZOoTiM_Rando
                     Kokiri.Clear();
                     foreach (string s in files)
                     {
-                        if (s.Substring(ogPath.Length + 1, 13).Equals("kokiri_forest") & s.Substring(s.Length - "outside.mcfunction".Length, "outside.mcfunction".Length).Equals("outside.mcfunction"))
+                        if ( s.Substring(s.Length - "outside.mcfunction".Length, "outside.mcfunction".Length).Equals("outside.mcfunction"))
                         {
                             Kokiri.Add(s);
                         }
@@ -68,6 +69,8 @@ namespace TLoZOoTiM_Rando
                 Debug.WriteLine(s);
             }
             RandomizeKokiri();
+            KokiriInsideRando = new string[Other.Length];
+            KokiriOutsideRando = new string[Other.Length];
             int i = 0;
             foreach (string s in outside) {
                 KokiriOutsideRando[i] = outside[Other[i]];
@@ -82,7 +85,7 @@ namespace TLoZOoTiM_Rando
         }
         string[] KokiriInsideFiles() {
             int i = 0;
-            string[] ret = new string[17];
+            string[] ret = new string[KokiriInside.Length];
             foreach (string s in KokiriInside) {
 
                ret[i]= File.ReadAllText(@s);
@@ -93,7 +96,7 @@ namespace TLoZOoTiM_Rando
         string[] KokiriOutsideFiles()
         {
             int i = 0;
-            string[] ret = new string[17];
+            string[] ret = new string[KokiriOutside.Length];
             foreach (string s in KokiriOutside)
             {
 
@@ -106,15 +109,32 @@ namespace TLoZOoTiM_Rando
         
         void RandomizeKokiri() {
             Random num = new Random();
-            bool[] free = new bool[17] {true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true};
+            bool[] free = new bool[KokiriInsideFiles().Length];
+            for (int j = 0;j<free.Length;j++) {
+                free[j]=true;
+            }
             int i = 0;
+            Other = new int[KokiriInsideFiles().Length];
             foreach (string s in KokiriInsideFiles()) {
-                int foo = num.Next(0,17);
-                for (;free[foo]!=true;) {
-                    foo = num.Next(0, 17);
-                   
+                int foo = num.Next(0,free.Length);
+                bool mybool = false;
+                for (;free[foo]==false||mybool==false;) {
+                    foo = num.Next(0, free.Length);
+                    string pathseg1 = KokiriInside[foo].Substring(ogPath.Length + 1,( KokiriInside[foo].Length - ogPath.Length + 1) - "inside.mcfunction".Length+2);
+                    int backslash = pathseg1.IndexOf("\\");
+                    string pathseg2 = pathseg1.Substring(0,backslash);
+                    
+                    Debug.WriteLine(pathseg2);
 
+                    string pathseg3 = KokiriInside[i].Substring(ogPath.Length + 1, (KokiriInside[i].Length - ogPath.Length + 1) - "inside.mcfunction".Length+2);
+                    int backsslash = pathseg3.IndexOf("\\");
+                    string pathseg4 = pathseg3.Substring(0, backsslash);
+                    mybool = pathseg2==pathseg4;
+                    if (mybool) { Debug.WriteLine("Match"); }
+                    Debug.WriteLine(pathseg4);
+                    
                 }
+                
                 Other[i] = foo;
                 Debug.WriteLine(foo);
                 free[foo] = false;
